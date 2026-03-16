@@ -70,7 +70,7 @@ export const TokenService = createJwtService({
   refrest_secret: JWT_REFRESH_SECRET,
 })
 
-export const getOptionsWithCookies = async (options: RequestOptions = {}) => {
+export async function getOptionsWithCookies<T extends Record<string, any>>(options:  RequestOptions<T> = {}) {
   const cookieStore = await cookies()
   const newOptions = { ...(options || {}) }
 
