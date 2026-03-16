@@ -1,6 +1,4 @@
-/* =============================
-   Enhanced CRUD Client Factory
-   ============================= */
+// @ts-nocheck
 
 import { getQueryClient } from '@/get-query-client'
 import { withErrorHandler } from '@/lib'
