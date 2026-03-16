@@ -83,7 +83,7 @@ export async function getOptionsWithCookies<T extends Record<string, any>>(optio
         cookie: cookieStore.toString(),
       },
     },
-  } satisfies RequestOptions
+  } satisfies RequestOptions<T>
 }
 export async function stringifyCookies(tokens?: Record<string, any>) {
   const cookieStore = await cookies()
