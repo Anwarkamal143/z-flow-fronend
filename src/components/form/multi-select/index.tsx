@@ -11,45 +11,26 @@ import BaseMultiSelect, {
   IMultiSelectCompnentProps,
 } from './multi-select-component'
 
-/* -------------------------------- Types -------------------------------- */
+type FormProps = {
+  isFormComponent: true
+} & FormMultiSelectProps<FieldValues>
 
-type IProps<IS_HOOK> = {
-  isFormComponent?: IS_HOOK
-} & (IS_HOOK extends true
-  ? FormMultiSelectProps<FieldValues>
-  : IMultiSelectCompnentProps)
+type NormalProps = {
+  isFormComponent?: false
+} & IMultiSelectCompnentProps
 
-/* ----------------------------- Component ---------------------------- */
+type Props = FormProps | NormalProps
 
-const MultiSelectComp = <T extends boolean = false>(
-  props: IProps<T>,
-  ref: Ref<HTMLButtonElement>,
-) => {
-  const {
-    placeholder = 'Select options',
-    isFormComponent = false,
-    ...rest
-  } = props
+const MultiSelectComp = (props: Props, ref: Ref<HTMLButtonElement>) => {
+  const { placeholder = 'Select options' } = props
 
-  if (isFormComponent) {
-    return (
-      <FormMultiSelectFormComponent
-        name={rest.name as any}
-        placeholder={placeholder}
-        {...rest}
-      />
-    )
+  if (props.isFormComponent) {
+    return <FormMultiSelectFormComponent {...props} placeholder={placeholder} />
   }
 
-  return (
-    <BaseMultiSelect name={rest.name} placeholder={placeholder} {...rest} />
-  )
+  return <BaseMultiSelect {...props} placeholder={placeholder} />
 }
 
-export const MultiSelect = forwardRef(MultiSelectComp) as <
-  T extends FieldValues,
->(
-  props: FormMultiSelectProps<T> & { ref?: Ref<HTMLButtonElement> },
-) => ReturnType<typeof MultiSelectComp>
+export const MultiSelect = forwardRef(MultiSelectComp)
 
 export default MultiSelect
