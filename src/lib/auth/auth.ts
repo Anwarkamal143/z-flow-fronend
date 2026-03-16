@@ -1,0 +1,110 @@
+import 'server-only'
+//
+import {
+  API_BASE_URL,
+  COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+  REFRESH_QUERY_KEY,
+} from '@/config'
+import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
+import { cookies } from 'next/headers'
+import { redirect, RedirectType } from 'next/navigation'
+import { getCookieAsString, TokenService } from './server-utils'
+
+export const getAuthCookiesValues = (cookies: ReadonlyRequestCookies) => {
+  return {
+    accessToken: cookies.get(COOKIE_NAME)?.value,
+    refreshToken: cookies.get(REFRESH_COOKIE_NAME)?.value,
+  }
+}
+export const authSession = async (
+  searchParams?: Record<string, any>,
+  isRedirect = true,
+): Promise<null | {
+  accessToken: string | undefined
+  refreshToken: string | undefined
+  user: IServerCookieType
+  cookie: string
+}> => {
+  // if want to refresh directly from server remove this and the condition above check for REFRESH_QUERY_KEY which returns null
+  if (searchParams?.[REFRESH_QUERY_KEY] == 'true') {
+    return null
+  }
+  const cookieStore = await cookies()
+  const tokens = getAuthCookiesValues(cookieStore)
+  const res = await TokenService.verify(tokens.accessToken)
+
+  if (res.data) {
+    return {
+      user: res.data.user,
+      ...tokens,
+      cookie: await getCookieAsString(),
+    }
+  }
+  if (res.isExpired) {
+    delete searchParams?.[REFRESH_QUERY_KEY]
+    let sParams =
+      searchParams != null ? new URLSearchParams(searchParams).toString() : ''
+
+    if (sParams) {
+      sParams = `?${sParams}&${REFRESH_QUERY_KEY}=true`
+    } else {
+      sParams = `?${REFRESH_QUERY_KEY}=true`
+    }
+    redirect(`${sParams}`, RedirectType.replace)
+
+    //                  untill down here and uncomment the code down here
+
+    // const resp = await refreshTokens(tokens.refreshToken as string);
+    // if (resp) {
+    // return {
+    //   ...resp,
+    //   user: TokenService.decodeToken(resp.accessToken),
+    //   cookie: await stringifyCookies({
+    //     [COOKIE_NAME]: resp.accessToken,
+    //     [REFRESH_COOKIE_NAME]: resp.refreshToken,
+    //   }),
+    // };
+    // }
+  }
+  if (isRedirect) {
+    // return redirect('/login', RedirectType.replace)
+    return redirect('/login?signout=true', RedirectType.replace)
+  }
+  return null
+}
+export const requireUnAuth = async (): Promise<null | {
+  accessToken: string | undefined
+  refreshToken: string | undefined
+  user: IServerCookieType
+}> => {
+  const cookieStore = await cookies()
+  const tokens = getAuthCookiesValues(cookieStore)
+  const res = await TokenService.verify(tokens.accessToken)
+
+  if (res.data) {
+    return redirect('/')
+  }
+  return null
+}
+const a = ' '
+
+async function refreshTokens(refreshToken: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh-tokens`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Cookie: `${REFRESH_COOKIE_NAME}=${refreshToken}`,
+      },
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+
+    // backend sets cookies → Next.js automatically persists them
+    const data = await res.json()
+    return data?.data
+  } catch (error) {
+    return null
+  }
+}

@@ -1,0 +1,153 @@
+'use client'
+
+import { NodeType } from '@/config/enums'
+import { nodeComponents } from '@/config/node-components'
+import AddNodeButton from '@/features/editor/components/add-node-button'
+import ExecuteWorkflowButton from '@/features/editor/components/execute-workflow-button'
+import { generateUUID } from '@/lib'
+import { useStoreWorkflowActions } from '@/store/useEditorStore'
+import { INode } from '@/types/Inode'
+import {
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Background,
+  ColorMode,
+  Connection,
+  Controls,
+  Edge,
+  EdgeChange,
+  MiniMap,
+  Node,
+  NodeChange,
+  Panel,
+  ReactFlow,
+  ReactFlowInstance,
+  ReactFlowProps,
+} from '@xyflow/react'
+import { useTheme } from 'next-themes'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+type FlowContainerProps = ReactFlowProps & {
+  nodes?: Node[]
+  edges?: Edge[]
+  onAutoSave?: (nodes: Node[], edges: Edge[]) => void | Promise<void>
+  autoSaveMs?: number
+  workflowId: string
+}
+
+export default function FlowContainer({
+  nodes: nds = [],
+  edges: edgs = [],
+  onInit,
+  onAutoSave,
+  autoSaveMs = 1000,
+  workflowId,
+  ...rest
+}: FlowContainerProps) {
+  const { setEditor } = useStoreWorkflowActions()
+
+  const [nodes, setNodes] = useState<Node[]>(nds)
+  const [edges, setEdges] = useState<Edge[]>(edgs)
+  const { theme } = useTheme()
+  const timeOutRef = useRef<NodeJS.Timeout>(null)
+  const editor = useRef<ReactFlowInstance<Node, Edge> | null>(null)
+  const handleAutoSave = () => {
+    timeOutRef.current && clearTimeout(timeOutRef.current)
+    if (onAutoSave) {
+      timeOutRef.current = setTimeout(() => {
+        onAutoSave?.(nodes, edges)
+      }, autoSaveMs)
+    }
+  }
+  const onNodesChange = useCallback(
+    (changes: NodeChange<Node>[]) =>
+      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+    [],
+  )
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange<Edge>[]) =>
+      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    [],
+  )
+  const onConnect = useCallback(
+    (params: Connection) =>
+      setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
+    [],
+  )
+
+  useEffect(() => {
+    if (editor.current) {
+      handleAutoSave()
+    }
+
+    return () => {
+      timeOutRef.current && clearTimeout(timeOutRef.current)
+    }
+  }, [nodes, edges, autoSaveMs])
+
+  useEffect(() => {
+    return () => {
+      editor.current = null
+    }
+  }, [])
+
+  const handleOnInit = (e?: ReactFlowInstance<Node, Edge>) => {
+    if (e) {
+      setEditor(e)
+      onInit?.(e)
+      editor.current = e
+    }
+  }
+  const hasManualTrigger = useMemo(() => {
+    return nodes.some((node) => node.type == NodeType.MANUAL_TRIGGER)
+  }, [nodes])
+
+  const INITIAL_NODE = useMemo(() => {
+    const centerX = window.innerWidth / 2
+    const centerY = window.innerHeight / 2
+    const INITIALNODE = {
+      id: generateUUID(),
+      workflowId: workflowId,
+      name: NodeType.INITIAL,
+      type: NodeType.INITIAL,
+      position: { x: centerX, y: centerY },
+    } as INode
+    return [INITIALNODE]
+  }, [nodes.length, workflowId])
+  return (
+    <div className='h-full w-full'>
+      <ReactFlow
+        nodes={nodes.length > 0 ? nodes : INITIAL_NODE}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeComponents}
+        fitView
+        colorMode={theme as ColorMode}
+        onInit={handleOnInit}
+        proOptions={{
+          hideAttribution: true,
+        }}
+        snapGrid={[10, 10]}
+        snapToGrid
+        panOnScroll
+        panOnDrag={false}
+        selectionOnDrag
+        {...rest}
+      >
+        <Background />
+        <Controls />
+        <MiniMap />
+        <Panel position='top-right'>
+          <AddNodeButton />
+        </Panel>
+        {hasManualTrigger && (
+          <Panel position='bottom-center'>
+            <ExecuteWorkflowButton workflowId={workflowId} />
+          </Panel>
+        )}
+      </ReactFlow>
+    </div>
+  )
+}
