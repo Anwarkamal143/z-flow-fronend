@@ -34,7 +34,7 @@ const MultiSelectComp = <T extends boolean = false>(
   if (isFormComponent) {
     return (
       <FormMultiSelectFormComponent
-        name={rest.name}
+        name={rest.name as string}
         placeholder={placeholder}
         {...rest}
       />
