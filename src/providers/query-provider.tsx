@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/sonner'
 import TokenManager from '@/components/token-manager'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Suspense } from 'react'
 import AppWrapper from './app-wrapper'
 
 // const RefreshTokens = () => {
@@ -26,7 +27,9 @@ export default function QueryProvider({
   return (
     <QueryClientProvider client={queryClient}>
       {/* <RefreshTokens /> */}
-      <TokenManager />
+      <Suspense fallback={null}>
+        <TokenManager />
+      </Suspense>
       <NetWorkStatus />
       <AppWrapper>{children}</AppWrapper>
       <Toaster richColors />
