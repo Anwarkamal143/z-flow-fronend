@@ -18,8 +18,8 @@ const AppWrapper = ({ children }: IAppWrapper) => {
   const isAuthenticating = useStoreUserIsAuthenticating()
   const isLoading = isFirstTimeLoading || isAuthenticating
   useEffect(() => {
-    console.log(isFirstTimeLoading, 'isFirstTimeLoading')
-    if (isFirstTimeLoading == undefined) return
+    console.log(isFirstTimeLoading, userData?.data, 'isFirstTimeLoading')
+    if (isFirstTimeLoading) return
     if (userData?.data?.id) {
       const { accounts, accessToken, refreshToken, ...rest } = userData.data
       setUser({
