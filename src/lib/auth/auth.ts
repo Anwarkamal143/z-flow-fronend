@@ -1,11 +1,6 @@
 import 'server-only'
 //
-import {
-  API_BASE_URL,
-  COOKIE_NAME,
-  REFRESH_COOKIE_NAME,
-  REFRESH_QUERY_KEY,
-} from '@/config'
+import { COOKIE_NAME, REFRESH_COOKIE_NAME, REFRESH_QUERY_KEY } from '@/config'
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
 import { cookies } from 'next/headers'
 import { redirect, RedirectType } from 'next/navigation'
@@ -33,7 +28,7 @@ export const authSession = async (
   const cookieStore = await cookies()
   const tokens = getAuthCookiesValues(cookieStore)
   const res = await TokenService.verify(tokens.accessToken)
-
+  console.log(tokens, res, 'workflows')
   if (res.data) {
     return {
       user: res.data.user,
@@ -86,25 +81,4 @@ export const requireUnAuth = async (): Promise<null | {
     return redirect('/')
   }
   return null
-}
-const a = ' '
-
-async function refreshTokens(refreshToken: string) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh-tokens`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        Cookie: `${REFRESH_COOKIE_NAME}=${refreshToken}`,
-      },
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-
-    // backend sets cookies → Next.js automatically persists them
-    const data = await res.json()
-    return data?.data
-  } catch (error) {
-    return null
-  }
 }

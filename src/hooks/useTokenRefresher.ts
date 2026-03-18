@@ -80,7 +80,6 @@ export function useTokenRefresher() {
 
     return () => {}
   }, [searchParams])
-  // gulraz phase 3 , city lizam School
 
   useEffect(() => {
     if (!accessToken) {
@@ -94,7 +93,7 @@ export function useTokenRefresher() {
 
       if (isExpired(accessToken)) {
         console.log('🔄 Access token expired → refreshing…')
-        // await refreshTokens()
+        await refreshTokens()
       }
     }, 30_000) // check every 30 sec
 
