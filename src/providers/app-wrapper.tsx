@@ -33,6 +33,16 @@ const AppWrapper = ({ children }: IAppWrapper) => {
         })
         return
       }
+      setUser({
+        user: undefined,
+        accounts: undefined,
+        isAuthenticated: false,
+        isLoggedIn: false,
+        isAuthenticating: false,
+        isTokensRefreshing: false,
+        accessToken: undefined,
+        refreshToken: undefined,
+      })
     },
   })
   const { setUser } = useStoreAuthActions()
@@ -41,7 +51,7 @@ const AppWrapper = ({ children }: IAppWrapper) => {
 
   useEffect(() => {
     if (isFirstTimeLoading) return
-    if (error?.message) {
+    if (!userData?.data.id) {
       setUser({
         user: undefined,
         accounts: undefined,
