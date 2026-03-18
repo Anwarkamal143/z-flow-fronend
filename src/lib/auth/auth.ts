@@ -28,7 +28,7 @@ export const authSession = async (
   const cookieStore = await cookies()
   const tokens = getAuthCookiesValues(cookieStore)
   const res = await TokenService.verify(tokens.accessToken)
-  console.log(tokens, res, 'workflows')
+  console.log(tokens, res, cookieStore.getAll(), 'workflows')
   if (res.data) {
     return {
       user: res.data.user,
