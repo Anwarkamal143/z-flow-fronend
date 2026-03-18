@@ -13,6 +13,19 @@ type IAppWrapper = {
 }
 
 const AppWrapper = ({ children }: IAppWrapper) => {
+  const { setUser } = useStoreAuthActions()
+  function resetUser() {
+    setUser({
+      user: undefined,
+      accounts: undefined,
+      isAuthenticated: false,
+      isLoggedIn: false,
+      isAuthenticating: false,
+      isTokensRefreshing: false,
+      accessToken: undefined,
+      refreshToken: undefined,
+    })
+  }
   const {
     data: userData,
     isLoading: isFirstTimeLoading,
@@ -33,35 +46,16 @@ const AppWrapper = ({ children }: IAppWrapper) => {
         })
         return
       }
-      setUser({
-        user: undefined,
-        accounts: undefined,
-        isAuthenticated: false,
-        isLoggedIn: false,
-        isAuthenticating: false,
-        isTokensRefreshing: false,
-        accessToken: undefined,
-        refreshToken: undefined,
-      })
+      resetUser()
     },
   })
-  const { setUser } = useStoreAuthActions()
   const isAuthenticating = useStoreUserIsAuthenticating()
   const isLoading = isFirstTimeLoading || isAuthenticating
 
   useEffect(() => {
     if (isFirstTimeLoading) return
-    if (!userData?.data?.id) {
-      setUser({
-        user: undefined,
-        accounts: undefined,
-        isAuthenticated: false,
-        isLoggedIn: false,
-        isAuthenticating: false,
-        isTokensRefreshing: false,
-        accessToken: undefined,
-        refreshToken: undefined,
-      })
+    if (error?.message) {
+      resetUser()
     }
   }, [isFirstTimeLoading])
   if (isLoading) {

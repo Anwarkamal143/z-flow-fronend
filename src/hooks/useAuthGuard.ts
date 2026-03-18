@@ -13,6 +13,7 @@ export function useAuthGuard(requiredRoles?: Role[]) {
 
   // Redirect logic
   useEffect(() => {
+    console.log('useAuthGuard', typeof window, isAuthenticating, user?.id)
     if (!isAuthenticating) {
       if (!user?.id) {
         router.replace('/login')
