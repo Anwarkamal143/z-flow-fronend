@@ -371,7 +371,6 @@ export function createCrudClient<TEntity, TParams = Record<string, any>>(
     if (response.data) {
       onSuccess?.(response.data)
     }
-
     return response
   }
 
@@ -664,6 +663,7 @@ export function createCrudClient<TEntity, TParams = Record<string, any>>(
           },
         })
         callOptions?.onSuccess?.(response)
+
         return response
       },
       enabled: isEnabled,
