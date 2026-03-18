@@ -51,7 +51,7 @@ const AppWrapper = ({ children }: IAppWrapper) => {
 
   useEffect(() => {
     if (isFirstTimeLoading) return
-    if (!userData?.data.id) {
+    if (!userData?.data?.id) {
       setUser({
         user: undefined,
         accounts: undefined,
