@@ -1,4 +1,4 @@
-import Dataloader from '@/components/loaders'
+// import Dataloader from '@/components/loaders'
 import { HydrateClient } from '@/components/server'
 
 import Executions, {
@@ -7,10 +7,10 @@ import Executions, {
   ExecutionsLoading,
 } from '@/features/executions/components/executions'
 
-import { prefetchServerExecutions } from '@/features/executions/server/prefetch'
-import { isAccessTokenRefresing } from '@/lib'
-import { authSession } from '@/lib/auth/auth'
-import { parseServerPaginationParams } from '@/queries/pagination/server/pagination-params'
+// import { prefetchServerExecutions } from '@/features/executions/server/prefetch'
+// import { isAccessTokenRefresing } from '@/lib'
+// import { authSession } from '@/lib/auth/auth'
+// import { parseServerPaginationParams } from '@/queries/pagination/server/pagination-params'
 import { SearchParams } from 'nuqs/server'
 import { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -19,17 +19,17 @@ type Props = {
 }
 
 const WorkFlowPage = async (props: Props) => {
-  const params = await props.searchParams
-  if (isAccessTokenRefresing(params)) {
-    return <Dataloader />
-  }
-  await authSession(params)
+  // const params = await props.searchParams
+  // if (isAccessTokenRefresing(params)) {
+  //   return <Dataloader />
+  // }
+  // await authSession(params)
 
-  void prefetchServerExecutions({
-    params: {
-      ...parseServerPaginationParams({ ...params, includeTotal: 'false' }),
-    },
-  })
+  // void prefetchServerExecutions({
+  //   params: {
+  //     ...parseServerPaginationParams({ ...params, includeTotal: 'false' }),
+  //   },
+  // })
   return (
     <HydrateClient>
       <ErrorBoundary fallback={<ExecutionsError />}>
